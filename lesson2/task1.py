@@ -1,6 +1,8 @@
 import random
 import time
 import re
+import json
+import os
 
 import requests
 from bs4 import BeautifulSoup
@@ -61,7 +63,7 @@ def find_all_vacancies(dom_arg):
                     max_compensation = int(m_c)
                     currency = comp_items[len(comp_items) - 1]
                 elif len([s for s in comp_items if any(xs in s for xs in ["–"])]) > 0:
-                    compensation_without_currency = "".join(comp_items[:len(comp_items)-1])
+                    compensation_without_currency = "".join(comp_items[:len(comp_items) - 1])
                     from_to_comp = compensation_without_currency.split("–")
                     from_comp = re.sub('\W+', '', from_to_comp[0])
                     to_comp = re.sub('\W+', '', from_to_comp[1])
@@ -101,3 +103,7 @@ for item in list(map(lambda x: str(x), vacancies)):
     for i in range(0, 100):
         print("_", end="")
     print()
+with open('data.json', 'w') as fp:
+    json.dump(vacancies, fp=fp, default=vars)
+
+os.remove("data.json")
