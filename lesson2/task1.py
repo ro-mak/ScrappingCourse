@@ -28,7 +28,7 @@ class Vacancy:
         self.link = link
 
     def __str__(self):
-        return f"{self.name}, {self.company}, {self.link}, {self.min_compensation}, {self.max_compensation}, {self.currency}"
+        return f"{self.name}, {self.company}, {self.link}, {self.min_compensation}, {self.max_compensation}, {self.currency}, found at HH.ru"
 
 
 def find_all_vacancies(dom_arg):
