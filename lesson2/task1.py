@@ -56,7 +56,7 @@ def get_best_paid_vacancies(min_salary):
     vacancies = db.vacancies
     higly_paid = vacancies.find(
         {"$or": [{"min_compensation": {"$gt": min_salary}}, {"max_compensation": {"$gt": min_salary}}]})
-    print("Highly paid vacancies")
+    print(f"Highly paid vacancies with salary bigger than {min_salary}")
     for v in higly_paid:
         print(v)
 
@@ -124,4 +124,4 @@ def scrape_all_pages(button_next_arg):
 
 scrape_all_pages(button_next)
 print_db_contents()
-get_best_paid_vacancies(350000)
+get_best_paid_vacancies(int(input("Enter min salary: ")))
