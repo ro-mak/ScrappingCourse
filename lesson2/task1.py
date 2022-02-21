@@ -51,6 +51,16 @@ def print_db_contents():
         print(entry)
 
 
+def get_best_paid_vacancies(min_salary):
+    db = connect_to_db()
+    vacancies = db.vacancies
+    higly_paid = vacancies.find(
+        {"$or": [{"min_compensation": {"$gt": min_salary}}, {"max_compensation": {"$gt": min_salary}}]})
+    print("Highly paid vacancies")
+    for v in higly_paid:
+        print(v)
+
+
 def find_all_vacancies(dom_arg):
     vacancy_items = dom_arg.find_all("div", {"class": "vacancy-serp-item"})
     for vacancy in vacancy_items:
@@ -114,3 +124,4 @@ def scrape_all_pages(button_next_arg):
 
 scrape_all_pages(button_next)
 print_db_contents()
+get_best_paid_vacancies(350000)
