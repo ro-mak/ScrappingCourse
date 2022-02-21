@@ -1,15 +1,15 @@
 import random
 import time
 import re
-import json
-import os
+
+from pymongo import MongoClient
 
 import requests
 from bs4 import BeautifulSoup
 
-vacancy = input("Please enter vacancy: ")
+vacancy_name = input("Please enter vacancy: ")
 base_url = "https://hh.ru"
-first_url = base_url + f"/search/vacancy?area=1&fromSearchLine=true&text={vacancy}"
+first_url = base_url + f"/search/vacancy?area=1&fromSearchLine=true&text={vacancy_name}"
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36"}
 response = requests.get(first_url, headers=headers)
@@ -17,11 +17,10 @@ dom = BeautifulSoup(response.text, 'html.parser')
 
 button_next = dom.find("a", {"class": "bloko-button", "data-qa": "pager-next"})
 
-vacancies = []
-
 
 class Vacancy:
     def __init__(self, name, company, link, min_compensation=None, max_compensation=None, currency=None):
+        self._id = str(hash(name) + hash(company) + hash(link))
         self.name = name
         self.company = company
         self.min_compensation = min_compensation
@@ -31,6 +30,25 @@ class Vacancy:
 
     def __str__(self):
         return f"{self.name}, {self.company}, {self.link}, {self.min_compensation}, {self.max_compensation}, {self.currency}, found at HH.ru"
+
+
+def connect_to_db():
+    client = MongoClient('127.0.0.1', 27017)
+    return client['jobs_db']
+
+
+def save_to_db(vacancy):
+    db = connect_to_db()
+    vacancies = db.vacancies
+    vacancies.insert_one(vacancy.__dict__)
+
+
+def print_db_contents():
+    db = connect_to_db()
+    vacancies = db.vacancies
+    result = vacancies.find({})
+    for entry in result:
+        print(entry)
 
 
 def find_all_vacancies(dom_arg):
@@ -71,7 +89,7 @@ def find_all_vacancies(dom_arg):
                     max_compensation = int(to_comp)
                     currency = comp_items[len(comp_items) - 1]
 
-                vacancies.append(Vacancy(name, link, company, min_compensation, max_compensation, currency))
+                save_to_db(Vacancy(name, company, link, min_compensation, max_compensation, currency))
         except Exception as e:
             print(e)
 
@@ -95,15 +113,4 @@ def scrape_all_pages(button_next_arg):
 
 
 scrape_all_pages(button_next)
-for i in range(0, 100):
-    print("_", end="")
-for item in list(map(lambda x: str(x), vacancies)):
-    print()
-    print(item)
-    for i in range(0, 100):
-        print("_", end="")
-    print()
-with open('data.json', 'w') as fp:
-    json.dump(vacancies, fp=fp, default=vars)
-
-os.remove("data.json")
+print_db_contents()
