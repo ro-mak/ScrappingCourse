@@ -2,11 +2,11 @@ import requests
 import json
 from pprint import pprint
 import os
-
-organizationsReq = requests.get("https://api.github.com/organizations")
-organizations = json.loads(organizationsReq.text)
-repos = [requests.get(organizations[0]["repos_url"])]
-parsed_json = json.loads(repos[0].text)
+username = input("Enter username:")
+usersReq = requests.get(f"https://api.github.com/users/{username}")
+user = json.loads(usersReq.text)
+repos = requests.get(user["repos_url"])
+parsed_json = json.loads(repos.text)
 
 with open('data.json', 'w') as fp:
     json.dump(parsed_json, fp)
